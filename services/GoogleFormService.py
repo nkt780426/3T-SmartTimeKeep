@@ -134,10 +134,12 @@ class GoogleFormService:
                     for label, value in fake_data[page_number].items():
                         # Lấy locator theo label
                         locator = page.get_by_label(label)
-                        if await locator.count() == 0:
-                            self.logger.warning(f"⚠️ Không tìm thấy label: {label}")
-                            return False
-
+                        try:
+                            await locator.wait_for(state="visible", timeout=3000)
+                        except Exception:
+                            self.logger.error(f"⚠️ Không tìm thấy label: {label}")
+                            raise ValueError(f"Label '{label}' không tồn tại")
+                            
                         # Kiểm tra radio hay text
                         option = page.get_by_role("radio", name=value)
                         if await option.count() > 0:
