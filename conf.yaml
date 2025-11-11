@@ -1,0 +1,21 @@
+google_from: https://docs.google.com/forms/d/10HFutzcAHMCSfS2s1lHuKk6b7bQmo3NKDcGjEzOxvaw/viewform?edit_requested=true
+google_from_uat: https://docs.google.com/forms/d/e/1FAIpQLSd9exvxiSpRR3CBuw5XfYzv_y-1e5yWw364eCJEOZLaskoZlQ/viewform?usp=dialog
+tmp: https://docs.google.com/forms/d/e/1FAIpQLSd9exvxiSpRR3CBuw5XfYzv_y-1e5yWw364eCJEOZLaskoZlQ/viewform?usp=pp_url&entry.1505557043=NV150&entry.39395834=Hoangvn&entry.543325851=D%26A&entry.1684097850=KienVQ+-+V%C5%A9+Qu%E1%BB%91c+Ki%C3%AAn&entry.464565108=Fulltime+(Ca+h%C3%A0nh+ch%C3%ADnh+8+ti%E1%BA%BFng)&entry.522155986=Check+in&entry.1186153448=Onsite&entry.1757039799=s%E1%BB%91+5,+ng%C3%B5+82,+Duy+T%C3%A2n,+C%E1%BA%A7u+Gi%E1%BA%A5y,+H%C3%A0+N%E1%BB%99i+(qu%C3%A3ng+%C4%91%C6%B0%E1%BB%9Dng+2km)
+
+timekeep: 
+  authorization: https://core-timekeep.mobifi.vn/api/TokenAuth/Authenticate
+  get_data: https://core-timekeep.mobifi.vn/api/services/app/TimeKeepData/GetData
+
+telegram:
+  chat_id: -5023279362
+  bot_token: '7538411387:AAH348vR-Ywgd4N_iJjQODVJ-OYgRzs-j4s'
+  user_map:
+    Vo Hoang:
+      3t_name: 'Hoangvn'
+      ma_nhan_vien: 'NV150'
+      phong_ban: 'Data & AI (D&A)'
+      user_teamlead: 'KienVQ - Vũ Quốc Kiên'
+      work_type: 'Fulltime (Ca hành chính 8 tiếng)'
+      dia_diem: 'số 5, ngõ 82, Duy Tân, Cầu Giấy, Hà Nội (quãng đường 2km)'
+      bot_check: 3
+      gender: Anh
