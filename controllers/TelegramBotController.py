@@ -12,7 +12,7 @@ from utils.date import is_weekend
 from services.MessageHandlerService import MessageHandlerService
 from services.SchedulerReport import SchedulerReport
 from datetime import datetime, time as dtime, timedelta, timezone
-
+import traceback
 
 class TelegramBotController:
     def __init__(self):
@@ -41,15 +41,17 @@ class TelegramBotController:
     
 
     async def response_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        first_name = update.effective_user.first_name
-        last_name = update.effective_user.last_name 
-        telegram_username = f"{first_name} {last_name}"
-        text = update.message.text.lower()
-        try:    
+        try:   
+            first_name = update.effective_user.first_name
+            last_name = update.effective_user.last_name 
+            telegram_username = f"{first_name} {last_name}"
+            text = update.message.text.lower()
             response_message = self.message_handler_service.handle_message(telegram_username, text)
             await update.message.reply_text(response_message)
         except Exception as e:
-            await update.message.reply_text('Từ từ em nói nhanh quá anh không theo kịp. Nói lại đi em.')
+            await update.message.reply_text('Anh không hiểu em đang nói gì, nói lại đi em.')
+            print(repr(e))
+            traceback.print_exc()
 
 
     def _setup_daily_job(self):
@@ -90,7 +92,7 @@ class TelegramBotController:
         # auto check out luc 17h01 chieu den 17h06
         self.application.job_queue.run_daily(
             self._daily_auto_check_in_out,
-            time=dtime(hour=17, minute=1, tzinfo=VN_TZ),
+            time=dtime(hour=17, minute=2, tzinfo=VN_TZ),
             days=(0, 1, 2, 3, 4, 5, 6),
             name="auto_check_out"
         )
@@ -98,7 +100,7 @@ class TelegramBotController:
         # double check all in/out moi 17h07 phut chieu
         self.application.job_queue.run_daily(
             self._daily_check_all_in_out,
-            time=dtime(hour=17, minute=7, tzinfo=VN_TZ),
+            time=dtime(hour=17, minute=10, tzinfo=VN_TZ),
             days=(0, 1, 2, 3, 4, 5, 6),
             name="daily_report_check_out"
         )
@@ -115,6 +117,8 @@ class TelegramBotController:
                 chat_id=self.app_config.get("telegram").get("chat_id"),
                 text=f"⚠️ Lỗi khi đang tự động check in/out cho em: \n{repr(e)}"
             )
+            print(repr(e))
+            traceback.print_exc()
     
     # Đã test thành công
     async def _daily_check_link_status(self, context: ContextTypes.DEFAULT_TYPE):
@@ -124,14 +128,16 @@ class TelegramBotController:
                 return
             self.app_config = ConfigLoader('./conf.yaml')
             await context.bot.send_message(
-                chat_id=self.app_config.get("telegram").get("chat_id"),
-                text=await self.scheduler_report_service.check_link_status()
+                chat_id = self.app_config.get("telegram").get("chat_id"),
+                text = await self.scheduler_report_service.check_link_status()
             )
         except Exception as e:
             await context.bot.send_message(
                 chat_id=self.app_config.get("telegram").get("chat_id"),
-                text=f"⚠️ Lỗi khi kiểm tra trạng thái link:\n{repr(e)}"
+                text = f"⚠️ Lỗi khi kiểm tra trạng thái link:\n{repr(e)}"
             )
+            print(repr(e))
+            traceback.print_exc()
 
     # Đã test thành công
     async def _daily_check_all_in_out(self, context: ContextTypes.DEFAULT_TYPE):
@@ -148,19 +154,23 @@ class TelegramBotController:
                 chat_id=self.app_config.get("telegram").get("chat_id"),
                 text=f"⚠️ Lỗi khi đang kiểm tra check in/out cho em:\n{repr(e)}"
             )
+            print(repr(e))
+            traceback.print_exc()
     
     # Xong
     async def _monthly_clear_job_states(self, context: ContextTypes.DEFAULT_TYPE):
-        """Job chạy vào ngày mùng 1 hàng tháng để xóa state của các job"""
+        """Job chạy vào ngày mùng 1 hàng tháng để xóa state của mọi người"""
         try:
             if datetime.now().day != 1:
                 return
-            await self.scheduler_report_service.clear_job_states(datetime.now())
+            self.scheduler_report_service.clear_job_states(datetime.now())
         except Exception as e:
             await context.bot.send_message(
                 chat_id=self.app_config.get("telegram").get("chat_id"),
                 text=f"⚠️ Lỗi khi xóa state hàng tháng:\n{repr(e)}"
             )
+            print(repr(e))
+            traceback.print_exc()
 
 
     def run(self):

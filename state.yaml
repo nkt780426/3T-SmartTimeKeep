@@ -1,6 +1,11 @@
 google_link: true
 timekeep_link: true
 user_states:
+  Ngoc Nguyen:
+    on_board:
+    - 2026-01-01
+    remove_days: []
   Vo Hoang:
     on_board: []
-    remove_days: []
+    remove_days:
+    - 2026-01-01

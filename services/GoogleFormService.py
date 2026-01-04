@@ -41,7 +41,7 @@ class GoogleFormService:
         """
         try:
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True)
+                browser = await p.chromium.launch(headless=False)
                 context = await browser.new_context()
                 page = await context.new_page()
 
@@ -85,7 +85,7 @@ class GoogleFormService:
                     raise RuntimeError("Không tìm thấy nút 'Gửi' trên trang cuối")
 
                 # Click nút gửi
-                await submit_button.click()
+                # await submit_button.click()
                 await page.wait_for_timeout(1000)
 
                 await browser.close()
@@ -116,7 +116,7 @@ class GoogleFormService:
                     "Địa điểm": "số 5, ngõ 82, Duy Tân, Cầu Giấy, Hà Nội (quãng đường 2km)" # radio
                 },
                 6: {
-                    "1+2=? (Điền số)": "3" # Điền text
+                    "1+9=? (Điền số)": "10" # Điền text
                 }
             }
             async with async_playwright() as p:
@@ -138,7 +138,7 @@ class GoogleFormService:
                             await locator.wait_for(state="visible", timeout=3000)
                         except Exception:
                             self.logger.error(f"⚠️ Không tìm thấy label: {label}")
-                            raise ValueError(f"Label '{label}' không tồn tại")
+                            return False
                             
                         # Kiểm tra radio hay text
                         option = page.get_by_role("radio", name=value)
@@ -162,4 +162,4 @@ class GoogleFormService:
 
         except Exception as e:
             self.logger.error(f"Lỗi khi kiểm tra form: {repr(e)}")
-            raise
+            return False

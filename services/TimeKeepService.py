@@ -4,6 +4,7 @@ from datetime import datetime
 from utils.AppLogger import AppLogger
 from utils.ConfigLoader import ConfigLoader
 from utils.date import get_time_period, is_weekend
+import traceback
 
 # Check timekeep để biết ai đó tháng này quên/đã checkin/out ngày nào.
 
@@ -40,6 +41,7 @@ class TimeKeepService:
             return res.status_code, res.json()['result']['accessToken']
         
         except Exception as e:
+            traceback.print_exc()
             self.logger.error(f"Error in __get_access_key: {repr(e)}")
             raise Exception(f"Error in __get_access_key: {repr(e)}")
     
@@ -88,6 +90,7 @@ class TimeKeepService:
             return dict(sorted(status.items(), key=lambda x: x[0]))
             
         except Exception as e:
+            traceback.print_exc()
             self.logger.error(f"Lỗi khi lấy báo cáo tháng của {user_id}: {repr(e)}")
             raise Exception(f"Lỗi khi lấy báo cáo tháng của {user_id}: {repr(e)}")
 
@@ -95,9 +98,10 @@ class TimeKeepService:
     # Phát hiện link timekeeper dead
     def get_status_of_link(self) -> bool:
         try:
-            self._get_current_month_status_in_timekeep("NV150", datetime.now())
+            self._get_current_month_status_in_timekeep("NV146", datetime.now())
             return True
         except Exception as e:
+            traceback.print_exc()
             self.logger.error(f"Link dead detected in get_status_of_link: {repr(e)}")
             return False
     
@@ -148,6 +152,7 @@ class TimeKeepService:
             return dict(sorted(res.items(), key=lambda x: x[0]))
 
         except Exception as e:
+            traceback.print_exc()
             self.logger.error(f"Lỗi khi lấy báo cáo tháng của {user_id}: {repr(e)}")
             raise Exception(f"Lỗi khi lấy báo cáo tháng của {user_id}: {repr(e)}")
         

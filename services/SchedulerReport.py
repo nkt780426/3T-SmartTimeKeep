@@ -52,28 +52,54 @@ class SchedulerReport:
     def _submit_for_user(self, telegram_user: str, telegram_user_data: dict):
         try:
             time.sleep(random.uniform(0, 240))  # Thêm độ trễ trước mỗi lần submit form để tránh hr nghi ngờ
-            form_data = {
-                1: {
-                    "User name": telegram_user_data['3t_name'],
-                    "Phòng ban": telegram_user_data['phong_ban'],
-                    "User teamlead": telegram_user_data['user_teamlead'],
-                },
-                2: {
-                    "Bạn muốn ?": "Check in" if get_time_period(datetime.now()) else "Check out", 
-                },
-                3:{
-                    "Ca làm việc": telegram_user_data['work_type']
-                },
-                4: {
-                    "Loại chấm công - Check in?": "Onsite"
-                },
-                5: {
-                    "Địa điểm": telegram_user_data['dia_diem']
-                },
-                6: {
-                    "1+2=? (Điền số)": str(telegram_user_data['bot_check'])
+            if get_time_period(datetime.now()):
+                
+                form_data = {
+                    1: {
+                        "User name": telegram_user_data['3t_name'],
+                        "Phòng ban": telegram_user_data['phong_ban'],
+                        "User teamlead": telegram_user_data['user_teamlead'],
+                    },
+                    2: {
+                        "Bạn muốn ?": "Check in", 
+                    },
+                    3:{
+                        "Ca làm việc": telegram_user_data['work_type']
+                    },
+                    4: {
+                        "Loại chấm công - Check in?": "Onsite"
+                    },
+                    5: {
+                        "Địa điểm": telegram_user_data['dia_diem']
+                    },
+                    6: {
+                        "1+9=? (Điền số)": '10'
+                    }
                 }
-            }
+            else:
+                form_data = {
+                    1: {
+                        "User name": telegram_user_data['3t_name'],
+                        "Phòng ban": telegram_user_data['phong_ban'],
+                        "User teamlead": telegram_user_data['user_teamlead'],
+                    },
+                    2: {
+                        "Bạn muốn ?": "Check out", 
+                    },
+                    3:{
+                        "Ca làm việc": telegram_user_data['work_type']
+                    },
+                    4: {
+                        "Loại chấm công - Check out?": "Onsite"
+                    },
+                    5: {
+                        "Địa điểm": telegram_user_data['dia_diem']
+                    },
+                    6: {
+                        "2+3=? (Điền số)": '5'
+                    }
+                }
+                
             asyncio.run(self.google_form_service.submit_form(form_data))
             
             return telegram_user

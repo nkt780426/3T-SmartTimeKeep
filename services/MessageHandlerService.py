@@ -5,6 +5,8 @@ from services.GoogleFormService import GoogleFormService
 from services.TimeKeepService import TimeKeepService
 
 from datetime import datetime, timedelta
+import sys
+import traceback
 
 class MessageHandlerService:
     
@@ -30,38 +32,59 @@ class MessageHandlerService:
         '''
         
         if telegram_name not in self.app_config.get('telegram').get('user_map'):
+            self.logger.error(f"Unknown telegram user: {telegram_name} not map {self.app_config.get('telegram').get('user_map')}")
             return "Xin lỗi anh không biết em là ai. Vui lòng đăng ký với bộ phận nhân sự nhé."
         
         try:
             command_code, request_dates = self._decode_request_message(request_message)
         except Exception as e:
-            return f'Từ từ em nói nhanh quá anh không theo kịp. Nói lại theo format đi em.\n{repr(e)}'
+            print(repr(e))
+            traceback.print_exc()
+            return f'Từ từ em nói nhanh quá anh không theo kịp. Nói lại theo format đi em.'
         
         if command_code == 'o':
             try:
                 return self._onboard_action(telegram_name, request_dates)
             except Exception as e:
-                return f'Lỗi khi thêm ngày vào cấu hình onboard.\n{repr(e)}'
+                print(repr(e))
+                traceback.print_exc()
+                return f'Lỗi khi thêm ngày vào cấu hình onboard.'
         elif command_code == 'r':
             try:
                 return self._remove_action(telegram_name, request_dates)
             except Exception as e:
-                return f'Lỗi khi xóa ngày khỏi cấu hình theo dõi timekeep .\n{repr(e)}'
+                print(repr(e))
+                traceback.print_exc()
+                return f'Lỗi khi xóa ngày khỏi cấu hình theo dõi timekeep.'
         elif command_code == 's':
             try:
                 return self._status_action(telegram_name)
             except Exception as e:
-                return f'Lỗi khi kiểm tra trạng thái cấu hình của {telegram_name}.\n{repr(e)}'
+                print(repr(e))
+                traceback.print_exc()
+                return f'Lỗi khi kiểm tra trạng thái cấu hình của {telegram_name}.'
         elif command_code == 'c':
             try:
                 return self._check_action(telegram_name)
             except Exception as e:
-                return f'Lỗi khi kiểm tra tình trạng check in/out của {telegram_name} trong tháng này.\n{repr(e)}'
+                print(repr(e))
+                traceback.print_exc()
+                return f'Lỗi khi kiểm tra tình trạng check in/out của {telegram_name} trong tháng này.'
+            
         elif command_code == 'd':
             try:
                 return self._delete_action(telegram_name)
             except Exception as e:
-                return f'Lỗi khi xóa toàn bộ cấu hình.\n{repr(e)}'
+                print(repr(e))
+                traceback.print_exc()
+                return f'Lỗi khi xóa toàn bộ cấu hình.'
+        elif command_code == 'e':
+            try:
+                return self._turn_off_bot_action()
+            except Exception as e:
+                print(repr(e))
+                traceback.print_exc()
+                return f'Lỗi khi turn off job.\n{repr(e)}'
         else:
             return 'Anh đang không hiểu lệnh em nói gì. Nói lại đi em.'
     
@@ -238,4 +261,7 @@ class MessageHandlerService:
         self.logger.info(f'User {telegram_user} deleted all configurations.')
         return 'Đã xóa toàn bộ cấu hình'
         
-        
+    def _turn_off_bot_action(self):
+        """Turn off the bot by deleting the job"""
+        self.logger.info('Turning off the bot.')
+        sys.exit(0)
