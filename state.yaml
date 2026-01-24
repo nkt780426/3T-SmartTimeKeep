@@ -1,5 +1,5 @@
-google_link: true
-timekeep_link: true
+google_link: false
+timekeep_link: false
 user_states:
   Ngoc Nguyen:
     on_board:

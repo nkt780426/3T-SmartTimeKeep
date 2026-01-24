@@ -41,58 +41,56 @@ class GoogleFormService:
         """
         try:
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=False)
+                browser = await p.chromium.launch(
+                    headless=True,
+                    args=[
+                        "--no-sandbox",
+                        "--disable-dev-shm-usage",
+                        "--disable-gpu",
+                    ]
+                )
+
                 context = await browser.new_context()
                 page = await context.new_page()
 
-                await page.goto(self.app_config.get("google_from"))
-                await page.wait_for_timeout(2000)
+                await page.goto(self.app_config.get("google_from"), wait_until="networkidle")
 
-                # Duyệt từng trang
                 for page_number in sorted(form_data.keys()):
                     self.logger.info(f"Điền dữ liệu trang {page_number} ...")
                     for label, value in form_data[page_number].items():
-                        # Lấy locator theo label
                         locator = page.get_by_label(label)
                         if await locator.count() == 0:
                             raise ValueError(f"Label '{label}' không tồn tại")
 
-                        # Kiểm tra radio hay text
                         option = page.get_by_role("radio", name=value)
                         if await option.count() > 0:
                             await option.first.click()
                         else:
-                            # Nếu không có radio thì coi là text input
                             await locator.fill(value)
 
                         await asyncio.sleep(random.uniform(2, 3))
 
-                    # Nhấn nút Next nếu chưa phải trang cuối
                     next_buttons = page.locator('div[role="button"]:has-text("Tiếp")')
                     if await next_buttons.count() > 0:
                         await next_buttons.first.click()
-                        await page.wait_for_timeout(1000)  # đợi trang mới load
+                        await page.wait_for_load_state("networkidle")
 
-                # Tìm nút có role="button" và text chứa "Gư" (đề phòng lỗi dấu tiếng Việt)
-                submit_button = page.locator('//div[@role="button"][.//span[contains(normalize-space(.), "Gư")]]').first
+                submit_buttons = page.locator('//div[@role="button"][.//span[contains(normalize-space(.), "Gư")]]')
+                if await submit_buttons.count() == 0:
+                    submit_buttons = page.locator('//div[@role="button"][.//span[contains(text(), "Submit")]]')
 
-                # Nếu không thấy, thử tìm nút tiếng Anh (Submit)
-                if await submit_button.count() == 0:
-                    submit_button = await page.locator('//div[@role="button"][.//span[contains(text(), "Submit")]]').first
+                if await submit_buttons.count() == 0:
+                    raise RuntimeError("Không tìm thấy nút Gửi")
 
-                # Nếu vẫn không thấy => báo lỗi
-                if await submit_button.count() == 0:
-                    raise RuntimeError("Không tìm thấy nút 'Gửi' trên trang cuối")
-
-                # Click nút gửi
-                # await submit_button.click()
-                await page.wait_for_timeout(1000)
+                await submit_buttons.first.click()
+                await page.wait_for_load_state("networkidle")
 
                 await browser.close()
-                self.logger.info("Đã submit thành công ✅")
+
+
         except Exception as e:
-            self.logger.error(f"Failed to submit form: {repr(e)}")
-            raise Exception(f"Failed to submit form: {repr(e)}")
+            self.logger.error(f"Lỗi khi kiểm tra form: {repr(e)}")
+            return False
     
     # Kiểm tra cấu trúc form ko đổi 
     async def get_status_of_link(self):
